@@ -40,7 +40,10 @@ namespace MyRagChatBot.Migrations
                     EmbeddingJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UploadedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastModified = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    LastModified = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Embedding = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FileName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UploadedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {

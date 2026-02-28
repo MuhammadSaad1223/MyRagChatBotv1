@@ -125,11 +125,22 @@ namespace MyRagChatBot.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("Embedding")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("EmbeddingJson")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("LastModified")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("UploadedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("UploadedDate")

@@ -170,18 +170,27 @@
     }
     ///\\\///// PDF/File Upload \\\\\\//////
     private async Task HandleFileUpload(InputFileChangeEventArgs e)
-    {
-        IsUploading = true;
-        Status = "Processing file(s)...";
-        StateHasChanged();
+{
+    IsUploading = true;
+    Status = "Processing file(s)...";
+    StateHasChanged();
 
+    try
+    {
         foreach (var file in e.GetMultipleFiles())
         {
-            await DocumentService.ProcessFileAsync(file);
+            var result = await RagService.ProcessDocument(file);
+            Status = result; // shows processed chunk count
         }
-
-        Status = "File(s) indexed successfully";
+    }
+    catch (Exception ex)
+    {
+        Status = $"Error: {ex.Message}";
+    }
+    finally
+    {
         IsUploading = false;
         StateHasChanged();
     }
+}
 }

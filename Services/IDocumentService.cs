@@ -7,6 +7,5 @@ namespace MyRagChatBot.Services
         Task<string> ProcessTextFile(IBrowserFile file);
         Task<string> ExtractTextFromFile(IBrowserFile file);
         List<string> SplitIntoChunks(string text, int chunkSize = 1000);
-        Task ProcessFileAsync(IBrowserFile file);
     }
 }

@@ -12,7 +12,7 @@ using MyRagChatBot.Data;
 namespace MyRagChatBot.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260106231030_InitialCreate")]
+    [Migration("20260228194249_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -128,11 +128,22 @@ namespace MyRagChatBot.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("Embedding")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("EmbeddingJson")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("LastModified")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("UploadedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("UploadedDate")

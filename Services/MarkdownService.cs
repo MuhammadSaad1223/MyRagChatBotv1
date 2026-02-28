@@ -26,7 +26,7 @@ namespace MyRagChatBot.Services
             if (string.IsNullOrEmpty(markdown))
                 return string.Empty;
 
-            // Remove markdown syntax
+          
             var html = Markdig.Markdown.ToHtml(markdown, _pipeline);
             // Convert HTML to plain text (simplified)
             return System.Net.WebUtility.HtmlDecode(

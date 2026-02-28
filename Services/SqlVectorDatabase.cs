@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using MyRagChatBot.Data;
 using MyRagChatBot.Models;
 
@@ -34,34 +34,47 @@ namespace MyRagChatBot.Services
         {
             try
             {
-                // Get all chunks from database
                 var allChunks = await _context.DocumentChunks.ToListAsync();
 
                 if (allChunks.Count == 0)
+                {
+                    _logger.LogWarning("No document chunks found in database.");
                     return new List<DocumentChunk>();
+                }
 
-                // Calculate similarity for each chunk
                 var chunksWithSimilarity = new List<(DocumentChunk Chunk, double Similarity)>();
 
                 foreach (var chunk in allChunks)
                 {
                     var chunkEmbedding = chunk.GetEmbedding();
 
-                    // Only compare if embeddings have same length
-                    if (chunkEmbedding.Length == queryEmbedding.Length)
+                    if (chunkEmbedding == null || chunkEmbedding.Length == 0)
                     {
-                        var similarity = CalculateCosineSimilarity(queryEmbedding, chunkEmbedding);
-                        chunksWithSimilarity.Add((chunk, similarity));
+                        _logger.LogWarning($"Chunk {chunk.Id} has empty embedding.");
+                        continue;
                     }
+
+                    if (chunkEmbedding.Length != queryEmbedding.Length)
+                    {
+                        _logger.LogWarning($"Embedding size mismatch for chunk {chunk.Id}");
+                        continue;
+                    }
+
+                    var similarity = CalculateCosineSimilarity(queryEmbedding, chunkEmbedding);
+
+                    _logger.LogInformation($"Chunk {chunk.Id} similarity: {similarity}");
+
+                    chunksWithSimilarity.Add((chunk, similarity));
                 }
 
-                // Sort by similarity (highest first) and take top K
+                
                 var topChunks = chunksWithSimilarity
                     .OrderByDescending(x => x.Similarity)
                     .Take(topK)
-                    .Where(x => x.Similarity > 0.7) // Threshold for relevance
                     .Select(x => x.Chunk)
                     .ToList();
+
+                _logger.LogInformation($"Returning {topChunks.Count} similar chunks.");
 
                 return topChunks;
             }
