@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MyRagChatBot.Models
 {
@@ -16,6 +17,9 @@ namespace MyRagChatBot.Models
         public float[] Embedding { get; set; } = Array.Empty<float>();
         public string FileName { get; set; } = string.Empty;
         public DateTime UploadedAt { get; set; }
+       
+        [NotMapped]
+        public double SimilarityScore { get; set; }
 
         // Helper method to get embedding as array
         public float[] GetEmbedding()

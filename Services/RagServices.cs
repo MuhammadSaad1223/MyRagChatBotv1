@@ -29,7 +29,20 @@ namespace MyRagChatBot.Services
         //  Main RAG pipeline for processing user queries
         public async Task<string> ProcessQuery(string query)
         {
+            var smallTalk = new[] { "hi", "hello", "hey", "how are you" };
+
+            if (smallTalk.Contains(query.ToLower().Trim()))
+            {
+                return await _geminiAIService.SimpleChat(query);
+            }
+
             _logger.LogInformation($"Processing query: {query}");
+
+            if (query.ToLower().Contains("leave the document") || 
+                query.ToLower().Contains("ignore the document"))
+            {
+                return await _geminiAIService.SimpleChat(query);
+            }
 
             try
             {
@@ -45,14 +58,19 @@ namespace MyRagChatBot.Services
                 // Step 2: Search the vector DB for the most similar document chunks
                 var similarChunks = await _vectorDatabase.SearchSimilarChunks(queryEmbedding, topK: 5);
 
-                if (similarChunks == null || similarChunks.Count == 0)
+                   // Filter only relevant chunks
+                    var relevantChunks = similarChunks
+                        .Where(c => c.SimilarityScore > 0.35)
+                        .ToList();
+
+                if (!relevantChunks.Any())
                 {
                     _logger.LogInformation("No relevant documents found, using simple chat");
                     return await _geminiAIService.SimpleChat(query);
                 }
-
+               
                 // Step 3: Build a contextual prompt from retrieved chunks
-                string context = BuildContextFromChunks(similarChunks);
+                string context = BuildContextFromChunks(relevantChunks);
 
                 // Step 4: Query Gemini with context and user query to get the final answer
                 var answer = await _geminiAIService.GetChatResponse(query, context);
@@ -121,21 +139,23 @@ namespace MyRagChatBot.Services
         private string BuildContextFromChunks(List<DocumentChunk> chunks)
         {
             var context = new StringBuilder();
-            int chunkNumber = 1;
 
-            context.AppendLine("Based on the following document content:");
+            context.AppendLine("You may use the following document context to answer the question. " +
+                "If the question is unrelated, ignore the document and answer normally.");
+            //context.AppendLine("If the question relates to the document, answer using the document content.");
             context.AppendLine();
+
+            int chunkNumber = 1;
 
             foreach (var chunk in chunks)
             {
-                context.AppendLine($"--- Section {chunkNumber} from '{chunk.DocumentName}' ---");
+                context.AppendLine($"Source {chunkNumber} ({chunk.DocumentName}):");
                 context.AppendLine(chunk.Content);
                 context.AppendLine();
                 chunkNumber++;
             }
 
-            context.AppendLine("Please answer the user's question based on the above context.");
-            return context.ToString().Trim();
+            return context.ToString();
         }
 
         // Optional helpers

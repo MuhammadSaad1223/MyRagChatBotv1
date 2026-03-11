@@ -34,7 +34,11 @@ namespace MyRagChatBot.Services
         {
             try
             {
-                var allChunks = await _context.DocumentChunks.ToListAsync();
+                //var allChunks = await _context.DocumentChunks.ToListAsync();
+                var allChunks = await _context.DocumentChunks
+                .OrderByDescending(c => c.UploadedDate)
+                .Take(200)
+                .ToListAsync();
 
                 if (allChunks.Count == 0)
                 {
@@ -42,7 +46,7 @@ namespace MyRagChatBot.Services
                     return new List<DocumentChunk>();
                 }
 
-                var chunksWithSimilarity = new List<(DocumentChunk Chunk, double Similarity)>();
+                var chunksWithSimilarity = new List<DocumentChunk>();
 
                 foreach (var chunk in allChunks)
                 {
@@ -64,15 +68,15 @@ namespace MyRagChatBot.Services
 
                     _logger.LogInformation($"Chunk {chunk.Id} similarity: {similarity}");
 
-                    chunksWithSimilarity.Add((chunk, similarity));
+                    chunk.SimilarityScore = similarity;
+                    chunksWithSimilarity.Add(chunk);
                 }
 
-                
+
                 var topChunks = chunksWithSimilarity
-                    .OrderByDescending(x => x.Similarity)
-                    .Take(topK)
-                    .Select(x => x.Chunk)
-                    .ToList();
+                .OrderByDescending(c => c.SimilarityScore)
+                .Take(topK)
+                .ToList();
 
                 _logger.LogInformation($"Returning {topChunks.Count} similar chunks.");
 
